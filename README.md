@@ -1,145 +1,145 @@
-# RenalCare – Protótipo de App de Autocuidado Renal
+# RenalCare (Protótipo)
 
-RenalCare é um protótipo de aplicativo **mobile** (React Native + Expo) para ajudar pacientes com Doença Renal Crônica (DRC) a:
+Aplicativo React Native (Expo) para auxiliar autocuidado renal — protótipo com telas de indicadores, histórico, integração simulada com wearable e perfil do paciente. Este README descreve como preparar o ambiente e executar o projeto localmente.
 
-- Registrar pressão arterial, peso e exames simples.
-- Acompanhar metas semanais de autocuidado.
-- Analisar refeições (simulação) a partir de foto/arquivo.
-- Ver indicadores com tendência (mini gráficos).
-- Gerar um **relatório impresso** para levar ao médico.
+> Observação: o código principal está em `App.tsx` (TypeScript React Native). O protótipo usa `expo-image-picker` dinamicamente para analisar fotos na plataforma móvel.
 
-Este repositório contém apenas o front-end em React Native, pensado para rodar com Expo (inclusive na Web, em modo de desenvolvimento).
+Índice
+- Visão geral
+- Requisitos
+- Instalação
+- Executando (desenvolvimento)
+  - Expo Go (Android / iOS)
+  - Web
+- Dependências opcionais
+- Como usar (mini tutorial)
+- Relatório para consulta
+- Problemas comuns / soluções
+- Contribuindo
 
----
+Visão geral
+---------
+O app é um protótipo para organização do autocuidado renal com:
+- Tela inicial com indicadores e gamificação
+- Registro de medidas (pressão, peso, exames)
+- Histórico filtrável
+- Tela de perfil com dados pessoais (nome, idade, estágio, altura e peso) editáveis
+- Geração de relatório (texto pronto para impressão)
+- Simulação de análise de refeição via seleção de imagem
 
-## Tecnologias
+Requisitos
+---------
+- Node.js (versão LTS recomendada, ex: >= 18)
+- npm (>= 8) ou yarn
+- Expo CLI (recomendado) — opcional, serve para rodar no Expo Go e web:
+  - Instalar globalmente: `npm install -g expo-cli` ou usar npx (recomendado)
+- Para rodar em emuladores:
+  - Android: Android Studio + emulador
+  - iOS (macOS): Xcode + simulador
+- Celular com Expo Go (Android/iOS) para testar rapidamente em dispositivo real
 
-- **React Native** (via Expo)
-- **TypeScript**
-- **Expo** (SDK padrão do `create-expo-app`)
-- **Expo Image Picker** (apenas em ambiente nativo; na Web usamos `input type="file"` como fallback)
-- Sem bibliotecas externas de gráfico — usamos um “mini gráfico” de barras com `View`.
+Instalação
+---------
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/VitorSena0/RenalCare.git
+   cd RenalCare
+   ```
 
----
+2. Instale dependências:
+   - Usando npm:
+     ```bash
+     npm install
+     ```
+   - Ou usando yarn:
+     ```bash
+     yarn install
+     ```
 
-## Funcionalidades principais
+3. (Recomendado) Instale a dependência usada para seleção de imagens no celular:
+   ```bash
+   npx expo install expo-image-picker
+   ```
+   Observação: o projeto importa `expo-image-picker` dinamicamente apenas em plataformas móveis. Se você não instalar, a funcionalidade de analisar refeição poderá não funcionar em dispositivos nativos.
 
-### 1. Tela Início (Home)
+Executando (desenvolvimento)
+---------------------------
 
-- Card de medicamento com próxima dose (ex: “Losartana 50mg às 14:00”).
-- Card “Analisar Refeição”:
-  - No **mobile (Expo)**: abre a galeria via `expo-image-picker`.
-  - No **Web**: abre um seletor de arquivo padrão do navegador.
-  - Exibe um modal com a imagem selecionada e um **texto de análise simulada** (orientações gerais).
-- Card “Desafio da Semana”:
-  - Mostra pontuação semanal.
-  - Barra de progresso (% de metas cumpridas).
-  - Metas:
-    - Registrar pressão 5x na semana.
-    - Controlar sódio 4 dias.
-    - Registrar peso 3x na semana.
+Usando Expo (recomendado)
+1. Inicie o Metro com Expo:
+   ```bash
+   npx expo start
+   ```
+   Isso abre a DevTools no navegador.
 
-### 2. Tela Registros (Histórico)
+2. Testar no celular com Expo Go:
+   - Escaneie o QR code com o app Expo Go para Android/iOS e rode o projeto no dispositivo.
 
-- Lista de tudo que o paciente cadastrou:
-  - Pressão arterial.
-  - Peso corporal.
-  - Exames (ex: TFG).
-- Filtros por tipo:
-  - Todos, Pressão, Peso, Exames.
-- Cada item mostra:
-  - Ícone (PA, KG, EX).
-  - Nome, data/hora, valor.
-  - “Pílula” de status (Ok / Atenção / Alerta).
+3. Testar em emulador Android:
+   - No DevTools clique em "Run on Android device/emulator" ou rode:
+     ```bash
+     npx expo run:android
+     ```
+   - Para iOS (macOS/Xcode):
+     ```bash
+     npx expo run:ios
+     ```
 
-#### Botão “Gerar relatório para consulta”
-
-- Gera um **relatório em texto** com:
-  - Dados do paciente (nome, idade, estágio da DRC).
-  - Indicadores atuais (TFG, pressão, peso).
-  - Resumo de registros (quantos de cada tipo).
-  - Últimas medidas de pressão, peso e exames.
-  - Espaço para assinatura do paciente e data.
-- Abre em um **modal de texto**.
-- Se estiver no **Web**, dispara `window.print()` para que o paciente possa:
-  - Imprimir direto, ou
-  - Salvar como PDF e levar ao médico.
-
-### 3. Tela Wearable
-
-- Simula conexão com relógio inteligente:
-  - Estado Online / Offline.
-  - Botão “Procurar dispositivos” / “Desconectar”.
-- Descreve benefícios da integração (simulada) e ressalta que é apenas protótipo.
-
-### 4. Tela Perfil
-
-- Mostra avatar com iniciais, nome, idade, estágio da DRC.
-- Acessos a:
-  - “Dados Pessoais”.
-  - “Medicamentos em uso”.
-- Texto explicativo reforçando que o app não substitui o médico.
-- Botão “Sair da Conta” (simulado).
-
-### 5. Registro de novos dados (FAB “+”)
-
-- Botão flutuante “+” visível em todas as telas.
-- Abre modal “Novo Registro” com 3 tipos:
-  - Pressão (sistólica/diastólica).
-  - Peso (kg).
-  - Exame (nome + valor).
-- Ao salvar:
-  - Adiciona ao histórico.
-  - Atualiza metas de gamificação (contadores de pressão/peso).
-
-### 6. Indicadores com mini-visualização
-
-- Card para cada indicador (TFG, PA, Peso).
-- Mostra:
-  - Nome, valor atual, unidade.
-  - Mini-série histórica representada por barras verticais (“MiniSparkline”).
-  - Pílula de status (Ok / Atenção / Alerta).
-- Botão “?” abre modal com **perguntas sugeridas** para levar ao médico.
-
-### 7. Notificações e lembretes (simulados)
-
-- Ícone de sino (🔔) no header.
-- Ao tocar:
-  - Abre modal com um texto de lembretes semanais:
-    - Quantas vezes já registrou pressão/peso.
-    - Progresso do controle de sódio.
-  - Pensado para o paciente lembrar o que precisa fazer.
-
----
-
-## Estrutura principal do código
-
-O aplicativo está concentrado em **um único arquivo**:
-
-- `app/(tabs)/index.tsx`
-
-Principais blocos:
-
-- **Tipos e dados mockados** (`StatusType`, `HistoryType`, `Indicator`, `HistoryItem`, `AppStateData`, `initialData`).
-- **Helpers visuais** (`statusLabel`, `statusColors`, etc.).
-- **MiniSparkline**: componente que exibe “gráfico” de tendência com barras (`View`).
-- **HomeScreen**, **RecordsScreen**, **WearableScreen**, **ProfileScreen**.
-- Componente principal `TabIndex`:
-  - Guarda o estado global (dados, tela atual, modal, etc.).
-  - Renderiza header, conteúdo, FAB e bottom navigation.
-  - Define handlers:
-    - `handleOpenNewRecord`, `handleSaveNewRecord`.
-    - `handleAskAI`, `handleGamificationInfo`.
-    - `handleOpenReport` (gera relatório).
-    - `handleAnalyzeMeal` (seletor de imagem nativo ou `input` no Web).
-    - `openNotifications` (lembretes).
-
----
-
-## Como rodar o projeto
-
-### 1. Criar projeto Expo (se ainda não existir)
-
+Executando na Web
+----------------
+O projeto também pode rodar no navegador (React Native for Web):
 ```bash
-npx create-expo-app renalcare-mobile --template blank-typescript
-cd renalcare-mobile
+npx expo start --web
+```
+Algumas funcionalidades dependentes de API nativa (ex.: seleção de imagem no mobile) têm comportamento diferente no navegador — no código há um fluxo específico para web que abre um seletor de arquivo.
+
+Dependências opcionais
+---------------------
+- expo-image-picker: usado para selecionar imagens da galeria em mobile.
+  - Instalar: `npx expo install expo-image-picker`
+- Certifique-se de ter as permissões necessárias no dispositivo (aparecerão automaticamente quando a funcionalidade for usada).
+
+Mini tutorial / como usar
+-------------------------
+- Navegação: barra inferior com abas Início, Registros, Wearable e Perfil.
+- Início:
+  - Ver indicadores (TFG, Pressão, Peso).
+  - Botão + (FAB) para abrir o formulário de novo registro (Pressão, Peso, Exame).
+  - Analisar Refeição: abre seletor de imagem (web/mobile).
+  - Pergunta (ícone "?") ao lado do indicador: abre sugestões de perguntas para a consulta.
+- Registros:
+  - Visualize histórico e filtre por tipo (Pressão, Peso, Exames).
+  - Botão "Gerar relatório para consulta" cria um texto formatado com dados do paciente e últimos registros.
+- Wearable:
+  - Simulação de conexão de relógio; botão para conectar/desconectar (simulado).
+- Perfil:
+  - Clique em "Dados Pessoais" para abrir o modal com informações do paciente.
+  - Campos disponíveis: Nome, Idade, Estágio da DRC, Altura (cm) e Peso (kg).
+  - Alterações no modal são salvas apenas na memória em estado da aplicação (não persistem após fechar o app a menos que você adicione armazenamento persistente).
+- Relatório:
+  - Ao gerar o relatório, altura e peso (autorrelato) aparecem no texto.
+  - Em web, o app tenta acionar print após abrir o modal de relatório.
+
+Observações técnicas
+--------------------
+- O código principal está em `App.tsx` (TypeScript / .tsx).
+- Dados iniciais estão em memória (mock). Para persistência entre sessões, considere adicionar AsyncStorage ou integrar uma API/backend.
+- O fluxo de seleção de imagem usa import dinâmico de `expo-image-picker` para evitar erros na web quando o pacote não existir.
+- Se usar TypeScript, verifique se o projeto contém `tsconfig.json` e as definições necessárias. Se o repositório estiver faltando configuração TypeScript, você pode renomear `App.tsx` para `App.js` e ajustar tipos, ou inicializar um projeto Expo com TypeScript template:
+  ```bash
+  npx create-expo-app --template expo-template-blank-typescript
+  ```
+
+Problemas comuns e solução
+--------------------------
+- Erro ao importar `expo-image-picker`:
+  - Rode `npx expo install expo-image-picker`.
+  - Reinicie o servidor (`npx expo start -c`) para limpar cache.
+- Permissão negada ao selecionar imagens:
+  - Em dispositivos Android/iOS, permita acesso à galeria quando o app solicitar.
+- Build quebrando por falta de dependência:
+  - Verifique `package.json` e instale dependências faltantes com `npm install` ou `yarn`.
+- Tela branca / cache:
+  - Limpe cache: `npx expo start -c`.
+
+
