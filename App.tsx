@@ -44,7 +44,7 @@ interface GamificationData {
 }
 
 interface AppStateData {
-  user: { name: string; age: number; stage: string };
+  user: { name: string; age: number; stage: string; height: number; weight: number };
   indicators: Indicator[];
   history: HistoryItem[];
   gamification: GamificationData;
@@ -52,7 +52,7 @@ interface AppStateData {
 
 // ---------- DADOS MOCK ----------
 const initialData: AppStateData = {
-  user: { name: 'João Silva', age: 56, stage: '3A' },
+  user: { name: 'João Silva', age: 56, stage: '3A', height: 170, weight: 88.5 },
   indicators: [
     {
       id: 'tfg',
@@ -544,9 +544,10 @@ const WearableScreen: React.FC<WearableProps> = ({
 
 interface ProfileProps {
   user: AppStateData['user'];
+  onOpenProfileDetails: () => void;
 }
 
-const ProfileScreen: React.FC<ProfileProps> = ({ user }) => {
+const ProfileScreen: React.FC<ProfileProps> = ({ user, onOpenProfileDetails }) => {
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 80 }}>
       <View style={styles.profileHeader}>
@@ -558,12 +559,16 @@ const ProfileScreen: React.FC<ProfileProps> = ({ user }) => {
           <Text style={styles.profileSubtitle}>
             DRC Estágio {user.stage} • {user.age} Anos
           </Text>
+          <Text style={styles.profileSubtitle}>
+            Altura {user.height} cm • Peso {user.weight.toFixed(1)} kg
+          </Text>
         </View>
       </View>
 
       <View style={{ padding: 16 }}>
         <View style={styles.cardWhite}>
-          <TouchableOpacity style={styles.profileRow}>
+          {/* Ao clicar em "Dados Pessoais" abre o modal com as infos cadastradas */}
+          <TouchableOpacity style={styles.profileRow} onPress={onOpenProfileDetails}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={styles.profileRowIcon}>
                 <Text style={{ color: '#2563eb', fontWeight: '700' }}>👤</Text>
@@ -599,6 +604,136 @@ const ProfileScreen: React.FC<ProfileProps> = ({ user }) => {
   );
 };
 
+// ---------- MODAL DE DADOS PESSOAIS ----------
+interface ProfileDetailsModalProps {
+  visible: boolean;
+  onClose: () => void;
+  user: AppStateData['user'];
+  onSaveUser: (user: AppStateData['user']) => void;
+}
+
+const ProfileDetailsModal: React.FC<ProfileDetailsModalProps> = ({
+  visible,
+  onClose,
+  user,
+  onSaveUser,
+}) => {
+  const [name, setName] = useState(user.name);
+  const [age, setAge] = useState(String(user.age));
+  const [stage, setStage] = useState(user.stage);
+  const [height, setHeight] = useState(String(user.height));
+  const [weight, setWeight] = useState(String(user.weight));
+
+  React.useEffect(() => {
+    if (visible) {
+      setName(user.name);
+      setAge(String(user.age));
+      setStage(user.stage);
+      setHeight(String(user.height));
+      setWeight(String(user.weight));
+    }
+  }, [visible, user]);
+
+  const handleSave = () => {
+    const parsedAge = parseInt(age, 10);
+    const parsedHeight = parseInt(height, 10);
+    const parsedWeight = parseFloat(weight.replace(',', '.'));
+
+    onSaveUser({
+      name: name.trim() || user.name,
+      age: isNaN(parsedAge) ? user.age : parsedAge,
+      stage: stage.trim() || user.stage,
+      height: isNaN(parsedHeight) ? user.height : parsedHeight,
+      weight: isNaN(parsedWeight) ? user.weight : parsedWeight,
+    });
+    onClose();
+  };
+
+  return (
+    <Modal
+      animationType="slide"
+      transparent
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalCard}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Dados Pessoais</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Text style={styles.modalClose}>×</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={{ padding: 16 }}>
+            <Text style={styles.smallMuted}>
+              Estas são as informações básicas que você informou ao criar a conta. Você pode
+              atualizar se algo tiver mudado.
+            </Text>
+
+            <Text style={styles.inputLabel}>Nome completo</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Ex: João Silva"
+            />
+
+            <Text style={styles.inputLabel}>Idade</Text>
+            <TextInput
+              style={styles.input}
+              value={age}
+              onChangeText={setAge}
+              keyboardType="number-pad"
+              placeholder="Ex: 56"
+            />
+
+            <Text style={styles.inputLabel}>Estágio da DRC</Text>
+            <TextInput
+              style={styles.input}
+              value={stage}
+              onChangeText={setStage}
+              placeholder="Ex: 3A"
+            />
+
+            <Text style={styles.inputLabel}>Altura (cm)</Text>
+            <TextInput
+              style={styles.input}
+              value={height}
+              onChangeText={setHeight}
+              keyboardType="number-pad"
+              placeholder="Ex: 170"
+            />
+
+            <Text style={styles.inputLabel}>Peso (kg)</Text>
+            <TextInput
+              style={styles.input}
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="decimal-pad"
+              placeholder="Ex: 88.5"
+            />
+
+            <View style={styles.modalFooterButtons}>
+              <TouchableOpacity
+                onPress={onClose}
+                style={styles.secondaryButtonFull}
+              >
+                <Text style={styles.secondaryButtonFullText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSave}
+                style={styles.primaryButtonFull}
+              >
+                <Text style={styles.primaryButtonFullText}>Salvar</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 // ---------- APP PRINCIPAL ----------
 export default function TabIndex() {
   const [data, setData] = useState<AppStateData>(initialData);
@@ -623,6 +758,8 @@ export default function TabIndex() {
   const [formPeso, setFormPeso] = useState('');
   const [formLabName, setFormLabName] = useState('');
   const [formLabValue, setFormLabValue] = useState('');
+
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
 
   const showModal = (title: string, body: string, kind: 'default' | 'report' | 'newRecord' = 'default') => {
     setModalTitle(title);
@@ -803,12 +940,14 @@ Use os pontos apenas como motivação pessoal. Em caso de dúvida, sempre conver
     linhas.push('');
     linhas.push(`Paciente: ${user.name}`);
     linhas.push(`Idade: ${user.age} anos`);
+    linhas.push(`Altura: ${user.height} cm`);
+    linhas.push(`Peso atual (autorrelato): ${user.weight.toFixed(1)} kg`);
     linhas.push(`Estágio da DRC: ${user.stage}`);
     linhas.push('');
     linhas.push('Indicadores atuais:');
     if (tfg) linhas.push(`- TFG: ${tfg.value} ${tfg.unit}`);
     if (pa) linhas.push(`- Pressão arterial (última): ${pa.value} ${pa.unit}`);
-    if (pesoAtual) linhas.push(`- Peso corporal (atual): ${pesoAtual.value} ${pesoAtual.unit}`);
+    if (pesoAtual) linhas.push(`- Peso corporal (último registro): ${pesoAtual.value} ${pesoAtual.unit}`);
     linhas.push('');
     linhas.push('Resumo de registros no app:');
     linhas.push(`- Total de registros: ${totalRegistros}`);
@@ -846,7 +985,7 @@ Use os pontos apenas como motivação pessoal. Em caso de dúvida, sempre conver
         input.type = 'file';
         input.accept = 'image/*';
         input.style.display = 'none';
-        input.onchange = (e: any) => {
+        (input as any).onchange = (e: any) => {
           const file = e.target.files && e.target.files[0];
           if (!file) return;
           const url = URL.createObjectURL(file);
@@ -892,6 +1031,17 @@ Use os pontos apenas como motivação pessoal. Em caso de dúvida, sempre conver
     }
   };
 
+  const handleOpenProfileDetails = () => {
+    setProfileModalVisible(true);
+  };
+
+  const handleSaveUser = (user: AppStateData['user']) => {
+    setData(prev => ({
+      ...prev,
+      user,
+    }));
+  };
+
   const renderScreen = () => {
     switch (currentScreen) {
       case 'inicio':
@@ -920,7 +1070,7 @@ Use os pontos apenas como motivação pessoal. Em caso de dúvida, sempre conver
           />
         );
       case 'perfil':
-        return <ProfileScreen user={data.user} />;
+        return <ProfileScreen user={data.user} onOpenProfileDetails={handleOpenProfileDetails} />;
       default:
         return null;
     }
@@ -1012,7 +1162,7 @@ Use os pontos apenas como motivação pessoal. Em caso de dúvida, sempre conver
         })}
       </View>
 
-      {/* Modal genérico */}
+      {/* Modal genérico (texto / novo registro / relatório) */}
       <Modal
         animationType="fade"
         transparent
@@ -1186,6 +1336,14 @@ Use os pontos apenas como motivação pessoal. Em caso de dúvida, sempre conver
           </View>
         </View>
       </Modal>
+
+      {/* Modal dos Dados Pessoais */}
+      <ProfileDetailsModal
+        visible={profileModalVisible}
+        onClose={() => setProfileModalVisible(false)}
+        user={data.user}
+        onSaveUser={handleSaveUser}
+      />
     </SafeAreaView>
   );
 }
